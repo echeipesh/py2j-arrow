@@ -41,8 +41,8 @@ lazy val py4 = project
   .settings(libraryDependencies ++=
      Seq(
         "net.sf.py4j" % "py4j" % "0.10.8.1",
-        "org.nd4j" % "nd4j-native-platform" % "1.0.0-beta5",
-        "org.nd4j" % "nd4j-arrow" % "1.0.0-beta5"
+        "org.nd4j" % "nd4j-native-platform" % "1.0.0-beta4",
+        "org.nd4j" % "nd4j-arrow" % "1.0.0-beta4"
      )
   )
 
