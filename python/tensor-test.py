@@ -12,6 +12,13 @@ tmpdir = "/Users/eugene/tmp"
 path = os.path.join(str(tmpdir), 'pyarrow-tensor-ipc-roundtrip')
 mmap = pa.create_memory_map(path, 1024)
 pa.write_tensor(tensor, mmap)
+mmap.flush()
+print(data)
+mmap.seek(0)
+result = pa.read_tensor(mmap)
+
+assert result.equals(tensor)
+
 mmap.close()
 
 # pa.write_tensor(tensor, mmap)
