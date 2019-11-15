@@ -2,7 +2,6 @@ from py4j.java_gateway import JavaGateway
 import numpy as np
 import pyarrow as pa
 
-
 class Nd4jIdentityType(pa.ExtensionType):
     def __init__(self):
         pa.ExtensionType.__init__(self, pa.uint32(), "nd4j-identity")

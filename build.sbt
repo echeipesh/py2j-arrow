@@ -28,17 +28,23 @@ lazy val commonSettings = Seq(
   Test / fork := true,
   Test / parallelExecution := false,
   Test / testOptions += Tests.Argument("-oDF"),
-  // ThisBuild / useCoursier := false,
-  shellPrompt := { s => Project.extract(s).currentProject.id + " > " }
+  shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
+  ThisBuild / useCoursier := false
 )
 
-lazy val root = Project("geotrellis-contrib", file("."))
+lazy val root = Project("py2j-arrow", file("."))
   .aggregate(py4, pyj)
   .settings(commonSettings: _*)
 
 lazy val py4 = project
   .settings(commonSettings)
-  .settings(libraryDependencies += "net.sf.py4j" % "py4j" % "0.10.8.1")
+  .settings(libraryDependencies ++=
+     Seq(
+        "net.sf.py4j" % "py4j" % "0.10.8.1",
+        "org.nd4j" % "nd4j-native-platform" % "1.0.0-beta5",
+        "org.nd4j" % "nd4j-arrow" % "1.0.0-beta5"
+     )
+  )
 
 lazy val pyj = project
   .settings(commonSettings)
