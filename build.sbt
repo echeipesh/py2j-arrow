@@ -19,8 +19,8 @@ lazy val commonSettings = Seq(
     "org.typelevel"   %% "spire"                % "0.16.2",
     "org.slf4j"        % "slf4j-api"            % "1.7.28",
     "org.slf4j"        % "slf4j-log4j12"        % "1.7.28",
-    "org.nd4j"         % "nd4j-native-platform" % "1.0.0-beta5",
-    "org.nd4j"         % "nd4j-arrow"           % "1.0.0-beta5",
+    "org.nd4j"         % "nd4j-native-platform" % "1.0.0-beta4",
+    "org.nd4j"         % "nd4j-arrow"           % "1.0.0-beta4",
     "org.scalatest"   %% "scalatest"            % "3.0.8" % Test
   ),
   headerLicense := Some(HeaderLicense.ALv2("2019", "Azavea")),
