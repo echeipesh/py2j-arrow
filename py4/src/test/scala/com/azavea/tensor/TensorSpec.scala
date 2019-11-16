@@ -10,8 +10,6 @@ import org.nd4j.arrow.ArrowSerde
 import org.scalatest._
 
 class TensorSpec extends FunSuite with Matchers {
-//  val bytes = Files.readAllBytes(path)
-
   test("decode tensor IPC message") {
     import org.apache.arrow.memory.RootAllocator
     import java.io.FileInputStream
@@ -31,16 +29,8 @@ class TensorSpec extends FunSuite with Matchers {
     info("stridesLength:" + tensor.stridesLength())
     info("strides(0)" + tensor.strides(0))
     info("strides(1)" + tensor.strides(1))
-
-
-    info(body.toString)
-
-
     val first = body.getDouble(0)
-    println(s"first = $first")
+    info(s"first = $first")
 
-//    val tens = Tensor.getRootAsTensor(ByteBuffer.wrap(bytes))
-//    val n = ArrowSerde.fromTensor(tens)
-//    info(n.toString)
   }
 }
