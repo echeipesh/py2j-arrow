@@ -8,8 +8,12 @@ import org.apache.arrow.memory.RootAllocator
 import org.apache.arrow.vector.ipc.ArrowStreamWriter
 import org.apache.arrow.vector.types.pojo.{Field, Schema}
 import org.apache.arrow.vector.ipc.ArrowStreamReader
-
 import java.io._
+import java.nio.ByteBuffer
+
+import com.google.flatbuffers.FlatBufferBuilder
+import org.apache.arrow.flatbuf.{Buffer, Tensor, TensorDim, Type}
+import org.apache.arrow.vector.ipc.message.{FBSerializable, MessageSerializer}
 
 import scala.collection.JavaConverters._
 
@@ -42,6 +46,60 @@ class IntArrowTile(val array: IntVector, val cols: Int, val rows: Int) {
   }
 
   def get(col: Int, row: Int): Int = array.get(row * cols + col)
+
+
+  /** Write Tensor to buffer, return offset of Tensor object in that buffer */
+  def writeTensor(bufferBuilder: FlatBufferBuilder): Int = {
+    val elementSize = 4
+    // TODO: I'm not sure which orientation of this array corresponds to row-major
+    val strides: Array[Long] = Array[Long](cols * elementSize, elementSize)
+
+    val shapeOffset: Int = {
+      val rank = 2
+      val tensorDimOffsets = new Array[Int](rank)
+      val nameOffset = new Array[Int](rank)
+
+      nameOffset(0) = bufferBuilder.createString("row")
+      tensorDimOffsets(0) = TensorDim.createTensorDim(bufferBuilder, rows, nameOffset(0))
+
+      nameOffset(1) = bufferBuilder.createString("col")
+      tensorDimOffsets(1) = TensorDim.createTensorDim(bufferBuilder, cols, nameOffset(1))
+
+      Tensor.createShapeVector(bufferBuilder, tensorDimOffsets)
+    }
+
+    val typeOffset = org.apache.arrow.flatbuf.Int.createInt(bufferBuilder, 32,true)
+
+    val stridesOffset = Tensor.createStridesVector(bufferBuilder, strides)
+    Tensor.startTensor(bufferBuilder)
+    Tensor.addTypeType(bufferBuilder, Type.Int)
+    // pa.read_tensor also wants type, ND4j does not write this because it I'm guessing its not written to python
+    Tensor.addType(bufferBuilder, typeOffset)
+    Tensor.addShape(bufferBuilder, shapeOffset)
+    Tensor.addStrides(bufferBuilder, stridesOffset)
+    // Buffers offset is relative to memory page, not the IPC message.
+    val tensorBodyOffset: Int = 0
+    val tensorBodySize: Int = array.getValueCount * array.getTypeWidth
+    val dataOffset = Buffer.createBuffer(bufferBuilder, tensorBodyOffset, tensorBodySize)
+    Tensor.addData(bufferBuilder, dataOffset)
+    Tensor.endTensor(bufferBuilder)
+  }
+
+  def toTensor(): Tensor = {
+    val bufferBuilder = new FlatBufferBuilder(64)
+    val tensorOffset = writeTensor(bufferBuilder)
+
+    Tensor.finishTensorBuffer(bufferBuilder, tensorOffset)
+    println(s"Final offset: ${bufferBuilder.offset()}")
+    Tensor.getRootAsTensor(bufferBuilder.dataBuffer)
+  }
+
+  def toIpcMessage(): ByteBuffer = {
+    val bufferBuilder = new FlatBufferBuilder(512)
+    val tensorOffset = writeTensor(bufferBuilder)
+    val tensorBodySize: Int = array.getValueCount * array.getTypeWidth
+    MessageSerializer.serializeMessage(bufferBuilder, org.apache.arrow.flatbuf.MessageHeader.Tensor, tensorOffset, tensorBodySize);
+  }
 }
 
 // TODO: use flat buffers instead of POJO (Plain Old Java Objects)?
