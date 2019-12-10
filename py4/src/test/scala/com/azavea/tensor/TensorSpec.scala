@@ -112,6 +112,7 @@ class TensorSpec extends FunSuite with Matchers {
   test("IntArrayTile to Tensor") {
     // lets just go medieval on this, a function was good enough for my grandpa, its good enough for me.
     val data = Array[Int](0, 1, 2, 3)
+    // TODO: Note that we get 16777216 as second number
     val tile = IntArrowTile(data, 2, 2)
     val bb = tile.toIpcMessage()
     import java.nio.channels.Channels
